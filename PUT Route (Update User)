@@ -1,0 +1,33 @@
+public function update(Request $request, $id)
+{
+    // Find the user by ID
+    $user = User::find($id);
+
+    // Check if user exists
+    if (!$user) {
+        return response()->json(['message' => 'User not found'], 404);
+    }
+
+    // Validate the incoming request data
+    $this->validate($request, [
+        'name' => 'sometimes|string|max:255',
+        'email' => 'sometimes|string|email|max:255|unique:users,email,'.$id,
+        'password' => 'sometimes|string|min:6|confirmed',
+    ]);
+
+    // Update user details
+    if ($request->has('name')) {
+        $user->name = $request->input('name');
+    }
+    if ($request->has('email')) {
+        $user->email = $request->input('email');
+    }
+    if ($request->has('password')) {
+        $user->password = bcrypt($request->input('password'));
+    }
+
+    // Save the updated user
+    $user->save();
+
+    return response()->json(['message' => 'User updated successfully', 'user' => $user], 200);
+}
